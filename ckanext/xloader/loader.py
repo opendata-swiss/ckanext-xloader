@@ -88,8 +88,7 @@ def load_csv(csv_filepath, resource_id, mimetype='text/csv', logger=None):
     # headers_dicts = [dict(id=field[0], type=TYPE_MAPPING[str(field[1])])
     #                  for field in zip(headers, types)]
 
-    # TODO worry about csv header name problems
-    # e.g. duplicate names
+    headers = cleanup_headers(headers)
 
     # encoding (and line ending?)- use chardet
     # It is easier to reencode it as UTF8 than convert the name of the encoding
@@ -240,6 +239,29 @@ def load_csv(csv_filepath, resource_id, mimetype='text/csv', logger=None):
     logger.info('...search index created')
 
     return fields
+
+
+def cleanup_headers(headers):
+    unique_headers = []
+    for header in headers:
+        if header not in unique_headers:
+            unique_headers.append(header)
+        else:
+            unique_headers = add_header_with_count(unique_headers, header)
+
+
+    return unique_headers
+
+
+def add_header_with_count(unique_headers, header, count=1):
+
+    header_with_count = header + '_' + str(count)
+    if header_with_count not in unique_headers:
+        unique_headers.append(header_with_count)
+        return unique_headers
+    else:
+        count += 1
+        return add_header_with_count(unique_headers, header, count)
 
 
 def create_column_indexes(fields, resource_id, logger):
